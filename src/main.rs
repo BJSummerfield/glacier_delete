@@ -1,14 +1,17 @@
-mod inventory;
+mod aws_service;
+mod file_service;
 use anyhow::Result;
+use aws_service::AwsService;
 use dotenvy::dotenv;
-use inventory::{DeletedInventory, Inventory};
+use file_service::FileService;
 
 #[tokio::main]
 async fn main() -> Result<()> {
     dotenv().ok();
-    let mut inventory = Inventory::new().await?;
-    let deleted_inventory = DeletedInventory::new().await?;
-    inventory.filter_deleted(&deleted_inventory.ids);
-    println!("{:?}", inventory.archive_list.len());
+    let file_service_fut = FileService::new();
+    let aws_service_fut = AwsService::new();
+    let (file_service, aws_service) = tokio::try_join!(file_service_fut, aws_service_fut)?;
+
+    aws_service.delete_archives(file_service).await?;
     Ok(())
 }
