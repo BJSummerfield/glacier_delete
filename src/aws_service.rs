@@ -55,7 +55,8 @@ impl AwsService {
                 async move {
                     match result {
                         Ok(Ok(archive_id)) => {
-                            println!("✅ Success: Deleted {}", archive_id);
+                            let truncated_id: String = archive_id.chars().take(12).collect();
+                            println!("✅ Success: Deleted {}", truncated_id);
                             if let Err(e) = fs_clone.log_deleted_id(&archive_id).await {
                                 eprintln!("🔥 Failed to log deleted ID {}: {}", archive_id, e);
                             }
